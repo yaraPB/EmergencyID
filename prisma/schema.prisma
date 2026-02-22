@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  publicId        String   @unique @default(cuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Personal Info
+  fullName        String
+  dateOfBirth     String?
+  bloodType       String?
+  organDonor      Boolean  @default(false)
+
+  // Medical Data (stored as JSON arrays)
+  allergies       String[]
+  conditions      String[]
+  medications     String[]
+  notes           String?
+
+  // Emergency Contacts (stored as JSON)
+  emergencyContacts Json[]
+
+  // Privacy Controls
+  visibility      Json     @default("{\"bloodType\":true,\"allergies\":true,\"conditions\":true,\"medications\":true,\"organDonor\":true,\"notes\":true,\"emergencyContacts\":true,\"dateOfBirth\":false}")
+
+  // Optional owner session (for dashboard)
+  ownerToken      String?
+}
