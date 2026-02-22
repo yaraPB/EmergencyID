@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { profileSchema, ProfileFormData } from '@/lib/validations'
 import { BLOOD_TYPES, DEFAULT_VISIBILITY } from '@/lib/types'
 import TagInput from './TagInput'
-import { Plus, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
+import { Plus, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, AlertCircle, User, Activity, Users, Lock, Shield } from 'lucide-react'
 
 interface ProfileFormProps {
   defaultValues?: Partial<ProfileFormData>
@@ -26,6 +26,19 @@ const SECTION_KEYS = [
   { key: 'emergencyContacts', label: 'Emergency Contacts' },
 ] as const
 
+const COUNTRY_CODES = [
+  { code: '+212', label: '🇲🇦 +212 (Morocco)' },
+  { code: '+1', label: '🇺🇸 +1 (US/CA)' },
+  { code: '+44', label: '🇬🇧 +44 (UK)' },
+  { code: '+33', label: '🇫🇷 +33 (France)' },
+  { code: '+34', label: '🇪🇸 +34 (Spain)' },
+  { code: '+49', label: '🇩🇪 +49 (Germany)' },
+  { code: '+39', label: '🇮🇹 +39 (Italy)' },
+  { code: '+971', label: '🇦🇪 +971 (UAE)' },
+  { code: '+966', label: '🇸🇦 +966 (Saudi Arabia)' },
+  { code: '+20', label: '🇪🇬 +20 (Egypt)' },
+]
+
 export default function ProfileForm({ defaultValues, onSubmit, isLoading, submitLabel = 'Create Profile' }: ProfileFormProps) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     personal: true,
@@ -35,7 +48,7 @@ export default function ProfileForm({ defaultValues, onSubmit, isLoading, submit
   })
 
   const { register, handleSubmit, watch, setValue, control, formState: { errors } } = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
+    resolver: zodResolver(profileSchema) as any,
     defaultValues: {
       fullName: '',
       dateOfBirth: '',
@@ -69,7 +82,7 @@ export default function ProfileForm({ defaultValues, onSubmit, isLoading, submit
     setValue(`visibility.${key}`, !visibility[key])
   }
 
-  const SectionHeader = ({ id, title, badge }: { id: string; title: string; badge?: string }) => (
+  const SectionHeader = ({ id, title, badge, icon: Icon }: { id: string; title: string; badge?: string; icon?: any }) => (
     <button
       type="button"
       onClick={() => toggleSection(id)}
@@ -88,7 +101,8 @@ export default function ProfileForm({ defaultValues, onSubmit, isLoading, submit
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <h3 className="font-display" style={{ fontSize: '1rem', fontWeight: 700 }}>{title}</h3>
+        {Icon && <div style={{ color: 'var(--coral)', display: 'flex' }}><Icon size={20} className="icon-glow" /></div>}
+        <h3 className="font-display" style={{ fontSize: '1.05rem', fontWeight: 800 }}>{title}</h3>
         {badge && (
           <span style={{
             fontSize: '0.7rem',
@@ -109,8 +123,8 @@ export default function ProfileForm({ defaultValues, onSubmit, isLoading, submit
     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
 
       {/* Personal Info */}
-      <div className="card" style={{ padding: '0 28px' }}>
-        <SectionHeader id="personal" title="Personal Information" />
+      <div className="card" style={{ padding: '0 28px', borderTop: '2px solid rgba(232, 90, 66, 0.2)' }}>
+        <SectionHeader id="personal" title="Personal Information" icon={User} />
         {openSections.personal && (
           <div style={{ paddingBottom: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div>
@@ -137,13 +151,18 @@ export default function ProfileForm({ defaultValues, onSubmit, isLoading, submit
                 />
               </div>
               <div>
-                <label className="label">Blood Type</label>
+                <label className="label">Blood Type <span style={{ color: 'var(--coral)' }}>*</span></label>
                 <select {...register('bloodType')} className="input">
                   <option value="">Select blood type</option>
                   {BLOOD_TYPES.map(bt => (
                     <option key={bt} value={bt}>{bt}</option>
                   ))}
                 </select>
+                {errors.bloodType && (
+                  <p style={{ color: 'var(--red)', fontSize: '0.8rem', marginTop: '6px', display: 'flex', gap: '4px', alignItems: 'center' }}>
+                    <AlertCircle size={12} /> {errors.bloodType.message}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -162,8 +181,8 @@ export default function ProfileForm({ defaultValues, onSubmit, isLoading, submit
       </div>
 
       {/* Medical Info */}
-      <div className="card" style={{ padding: '0 28px', marginTop: '12px' }}>
-        <SectionHeader id="medical" title="Medical Information" />
+      <div className="card" style={{ padding: '0 28px', marginTop: '16px', borderTop: '2px solid rgba(253, 224, 71, 0.2)' }}>
+        <SectionHeader id="medical" title="Medical Information" icon={Activity} />
         {openSections.medical && (
           <div style={{ paddingBottom: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <TagInput
@@ -201,8 +220,8 @@ export default function ProfileForm({ defaultValues, onSubmit, isLoading, submit
       </div>
 
       {/* Emergency Contacts */}
-      <div className="card" style={{ padding: '0 28px', marginTop: '12px' }}>
-        <SectionHeader id="contacts" title="Emergency Contacts" badge={contactFields.length > 0 ? `${contactFields.length} added` : undefined} />
+      <div className="card" style={{ padding: '0 28px', marginTop: '16px', borderTop: '2px solid rgba(59, 130, 246, 0.2)' }}>
+        <SectionHeader id="contacts" title="Emergency Contacts" badge={contactFields.length > 0 ? `${contactFields.length} added` : undefined} icon={Users} />
         {openSections.contacts && (
           <div style={{ paddingBottom: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {contactFields.map((field, index) => (
@@ -235,32 +254,63 @@ export default function ProfileForm({ defaultValues, onSubmit, isLoading, submit
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
-                    <label className="label" style={{ fontSize: '0.7rem' }}>Name</label>
+                    <label className="label" style={{ fontSize: '0.7rem' }}>Name <span style={{ color: 'var(--coral)' }}>*</span></label>
                     <input
                       {...register(`emergencyContacts.${index}.name`)}
                       className="input"
                       style={{ padding: '10px 12px' }}
                       placeholder="Full name"
                     />
+                    {errors.emergencyContacts?.[index]?.name && (
+                      <p style={{ color: 'var(--red)', fontSize: '0.75rem', marginTop: '4px', display: 'flex', gap: '4px', alignItems: 'center' }}>
+                        <AlertCircle size={10} /> {errors.emergencyContacts[index]?.name?.message}
+                      </p>
+                    )}
                   </div>
                   <div>
-                    <label className="label" style={{ fontSize: '0.7rem' }}>Phone</label>
-                    <input
-                      {...register(`emergencyContacts.${index}.phone`)}
-                      type="tel"
-                      className="input"
-                      style={{ padding: '10px 12px' }}
-                      placeholder="+212 600 000 000"
-                    />
+                    <label className="label" style={{ fontSize: '0.7rem' }}>Phone <span style={{ color: 'var(--coral)' }}>*</span></label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <select
+                        {...register(`emergencyContacts.${index}.countryCode`)}
+                        className="input"
+                        style={{ padding: '10px 4px', width: '80px', flexShrink: 0 }}
+                      >
+                        {COUNTRY_CODES.map(c => (
+                          <option key={c.code} value={c.code}>{c.label}</option>
+                        ))}
+                      </select>
+                      <input
+                        {...register(`emergencyContacts.${index}.phone`)}
+                        type="tel"
+                        className="input"
+                        style={{ padding: '10px 12px', flex: 1 }}
+                        placeholder="600 000 000"
+                      />
+                    </div>
+                    {errors.emergencyContacts?.[index]?.countryCode && (
+                      <p style={{ color: 'var(--red)', fontSize: '0.75rem', marginTop: '4px', display: 'flex', gap: '4px', alignItems: 'center' }}>
+                        <AlertCircle size={10} /> {errors.emergencyContacts[index]?.countryCode?.message}
+                      </p>
+                    )}
+                    {errors.emergencyContacts?.[index]?.phone && (
+                      <p style={{ color: 'var(--red)', fontSize: '0.75rem', marginTop: '4px', display: 'flex', gap: '4px', alignItems: 'center' }}>
+                        <AlertCircle size={10} /> {errors.emergencyContacts[index]?.phone?.message}
+                      </p>
+                    )}
                   </div>
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <label className="label" style={{ fontSize: '0.7rem' }}>Relationship</label>
+                    <label className="label" style={{ fontSize: '0.7rem' }}>Relationship <span style={{ color: 'var(--coral)' }}>*</span></label>
                     <input
                       {...register(`emergencyContacts.${index}.relationship`)}
                       className="input"
                       style={{ padding: '10px 12px' }}
                       placeholder="e.g. Spouse, Parent, Sibling"
                     />
+                    {errors.emergencyContacts?.[index]?.relationship && (
+                      <p style={{ color: 'var(--red)', fontSize: '0.75rem', marginTop: '4px', display: 'flex', gap: '4px', alignItems: 'center' }}>
+                        <AlertCircle size={10} /> {errors.emergencyContacts[index]?.relationship?.message}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -268,7 +318,7 @@ export default function ProfileForm({ defaultValues, onSubmit, isLoading, submit
 
             <button
               type="button"
-              onClick={() => appendContact({ name: '', phone: '', relationship: '' })}
+              onClick={() => appendContact({ name: '', countryCode: '+212', phone: '', relationship: '' })}
               className="btn-secondary"
               style={{ width: '100%', justifyContent: 'center', padding: '12px' }}
             >
@@ -280,8 +330,8 @@ export default function ProfileForm({ defaultValues, onSubmit, isLoading, submit
       </div>
 
       {/* Privacy Controls */}
-      <div className="card" style={{ padding: '0 28px', marginTop: '12px' }}>
-        <SectionHeader id="privacy" title="Privacy Controls" />
+      <div className="card" style={{ padding: '0 28px', marginTop: '16px', borderTop: '2px solid rgba(168, 85, 247, 0.2)' }}>
+        <SectionHeader id="privacy" title="Privacy Controls" icon={Lock} />
         {openSections.privacy && (
           <div style={{ paddingBottom: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px', lineHeight: 1.6 }}>

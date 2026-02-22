@@ -41,7 +41,7 @@ export default function HeroSection() {
       <div style={{
         position: 'absolute',
         inset: 0,
-        background: 'radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(232, 83, 58, 0.05) 0%, transparent 60%)',
+        background: 'radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(232, 90, 66, 0.06) 0%, transparent 60%)',
         pointerEvents: 'none',
         transition: 'opacity 0.3s ease',
       }} />
@@ -57,7 +57,7 @@ export default function HeroSection() {
         width: 400,
         height: 400,
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(232, 83, 58, 0.08) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(232, 90, 66, 0.07) 0%, transparent 70%)',
         animation: 'float 6s ease-in-out infinite',
         pointerEvents: 'none',
       }} />
@@ -98,49 +98,64 @@ export default function HeroSection() {
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
-              background: 'rgba(232, 83, 58, 0.1)',
-              border: '1px solid rgba(232, 83, 58, 0.3)',
+              gap: '10px',
+              background: 'var(--coral-bg)',
+              border: '1px solid var(--coral-dim)',
               borderRadius: '100px',
-              padding: '6px 16px',
-              marginBottom: '32px',
+              padding: '8px 18px',
+              marginBottom: 'var(--space-lg)',
               animation: 'fadeUp 0.5s ease forwards',
             }}
           >
             <span className="status-dot" />
-            <span style={{ color: 'var(--coral)', fontSize: '0.8rem', fontFamily: 'var(--font-syne)', fontWeight: 600, letterSpacing: '0.08em' }}>
+            <span style={{ color: 'var(--coral)', fontSize: '0.8rem', fontFamily: 'var(--font-display)', fontWeight: 600, letterSpacing: '0.08em' }}>
               EVERY SECOND COUNTS
             </span>
           </div>
 
-          {/* Headline */}
-          <h1
-            className="font-display"
+          {/* Headline – written in a special, distinct way */}
+          <div
+            className="hero-statement-wrap"
             style={{
-              fontSize: 'clamp(2.8rem, 6vw, 5rem)',
-              fontWeight: 800,
-              lineHeight: 1.05,
-              letterSpacing: '-0.02em',
-              marginBottom: '24px',
+              marginBottom: 'var(--space-md)',
               animation: 'fadeUp 0.5s 0.1s ease both',
               opacity: 0,
             }}
           >
-            Your medical info,{' '}
-            <br />
-            one scan away from{' '}
-            <br />
-            <span className="text-gradient">saving your life.</span>
-          </h1>
+            <h1
+              className="hero-statement"
+              style={{
+                fontSize: 'clamp(2.75rem, 6vw, 4.75rem)',
+                margin: 0,
+                paddingLeft: 'var(--space-md)',
+                borderLeft: '4px solid var(--coral)',
+                background: 'linear-gradient(90deg, rgba(232, 90, 66, 0.06) 0%, transparent 100%)',
+                paddingTop: 'var(--space-sm)',
+                paddingBottom: 'var(--space-sm)',
+                paddingRight: 'var(--space-sm)',
+                borderRadius: '0 var(--radius-md) var(--radius-md) 0',
+              }}
+            >
+              <span style={{ color: 'var(--text-primary)' }}>
+                Your medical info,
+                <br />
+                one scan away from
+                <br />
+              </span>
+              <span className="hero-statement-accent" style={{ fontSize: 'clamp(1.15em, 2.2vw, 1.35em)', marginTop: '2px', lineHeight: 1.1 }}>
+                saving your life.
+              </span>
+            </h1>
+          </div>
 
           {/* Subtext */}
           <p
             style={{
-              fontSize: '1.1rem',
+              fontSize: '1.125rem',
               color: 'var(--text-secondary)',
-              lineHeight: 1.7,
-              maxWidth: 540,
-              marginBottom: '40px',
+              lineHeight: 1.75,
+              maxWidth: 520,
+              marginBottom: 'var(--space-lg)',
               animation: 'fadeUp 0.5s 0.2s ease both',
               opacity: 0,
             }}
@@ -154,7 +169,7 @@ export default function HeroSection() {
           <div
             style={{
               display: 'flex',
-              gap: '12px',
+              gap: 'var(--space-sm)',
               flexWrap: 'wrap',
               animation: 'fadeUp 0.5s 0.3s ease both',
               opacity: 0,
@@ -173,22 +188,22 @@ export default function HeroSection() {
           <div
             style={{
               display: 'flex',
-              gap: '24px',
-              marginTop: '48px',
+              gap: 'var(--space-lg)',
+              marginTop: 'var(--space-xl)',
               flexWrap: 'wrap',
               animation: 'fadeUp 0.5s 0.4s ease both',
               opacity: 0,
             }}
           >
             {[
-              { icon: <Zap size={14} />, label: 'Instant Access', desc: 'No login required' },
-              { icon: <Shield size={14} />, label: 'You Control', desc: 'Choose what\'s visible' },
-              { icon: <Lock size={14} />, label: 'One Scan', desc: 'Works with any phone' },
+              { icon: <Zap size={16} />, label: 'Instant Access', desc: 'No login required' },
+              { icon: <Shield size={16} />, label: 'You Control', desc: 'Choose what\'s visible' },
+              { icon: <Lock size={16} />, label: 'One Scan', desc: 'Works with any phone' },
             ].map((item) => (
-              <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  width: 32, height: 32,
-                  borderRadius: 'var(--radius-sm)',
+                  width: 40, height: 40,
+                  borderRadius: 'var(--radius-md)',
                   background: 'var(--surface-raised)',
                   border: '1px solid var(--surface-border)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -197,10 +212,10 @@ export default function HeroSection() {
                   {item.icon}
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.82rem', fontFamily: 'var(--font-syne)', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  <div style={{ fontSize: '0.9rem', fontFamily: 'var(--font-display)', fontWeight: 600, color: 'var(--text-primary)' }}>
                     {item.label}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.desc}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{item.desc}</div>
                 </div>
               </div>
             ))}

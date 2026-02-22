@@ -35,33 +35,31 @@ export default function HowItWorks() {
       id="how-it-works"
       style={{
         background: 'var(--navy)',
-        padding: '100px 24px',
+        padding: 'var(--section-padding)',
       }}
     >
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+      <div style={{ maxWidth: 'var(--content-wide)', margin: '0 auto' }}>
         {/* Section Header */}
-        <div style={{ textAlign: 'center', marginBottom: '72px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'var(--space-2xl)' }}>
           <div style={{
             display: 'inline-block',
             background: 'var(--surface-raised)',
             border: '1px solid var(--surface-border)',
             borderRadius: '100px',
-            padding: '5px 16px',
-            marginBottom: '20px',
+            padding: '8px 18px',
+            marginBottom: 'var(--space-md)',
           }}>
-            <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-syne)', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.1em' }}>
-              HOW IT WORKS
-            </span>
+            <span className="section-label">HOW IT WORKS</span>
           </div>
           <h2 className="font-display" style={{
-            fontSize: 'clamp(2rem, 4vw, 3rem)',
-            fontWeight: 800,
+            fontSize: 'clamp(1.9rem, 3.8vw, 2.75rem)',
+            fontWeight: 700,
             letterSpacing: '-0.02em',
-            marginBottom: '16px',
+            marginBottom: 'var(--space-sm)',
           }}>
             Three steps to be ready for anything
           </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: 500, margin: '0 auto', lineHeight: 1.7 }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', maxWidth: 500, margin: '0 auto', lineHeight: 1.7 }}>
             Set up once, be protected forever. The whole process takes under 3 minutes.
           </p>
         </div>
@@ -70,29 +68,16 @@ export default function HowItWorks() {
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '24px',
+          gap: 'var(--space-lg)',
         }}>
           {steps.map((step, i) => (
             <div
               key={step.number}
-              className="card"
+              className="card card-hover"
               style={{
-                padding: '36px 32px',
+                padding: 'var(--space-lg) 28px',
                 position: 'relative',
                 overflow: 'hidden',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget
-                el.style.transform = 'translateY(-4px)'
-                el.style.boxShadow = `0 20px 60px rgba(0,0,0,0.3)`
-                el.style.borderColor = step.accent
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget
-                el.style.transform = 'translateY(0)'
-                el.style.boxShadow = 'none'
-                el.style.borderColor = 'var(--surface-border)'
               }}
             >
               {/* Big number background */}
@@ -115,15 +100,15 @@ export default function HowItWorks() {
               </div>
 
               <h3 className="font-display" style={{
-                fontSize: '1.3rem',
-                fontWeight: 700,
-                marginBottom: '12px',
+                fontSize: '1.25rem',
+                fontWeight: 600,
+                marginBottom: 'var(--space-sm)',
                 color: 'var(--text-primary)',
               }}>
                 {step.title}
               </h3>
 
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', lineHeight: 1.7 }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.7 }}>
                 {step.description}
               </p>
 

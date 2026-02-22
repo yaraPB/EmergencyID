@@ -11,42 +11,43 @@ import { getOwnerToken } from '@/lib/token'
 import { CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
-export default function EditPage() {
-  const params = useParams()
-  const router = useRouter()
-  const publicId = params.id as string
+interface EditPageProps {
+  params: Promise<{ id: string }>
+}
 
-  const [profile, setProfile] = useState<Profile | null>(null)
+export default function EditPage({ params }: EditPageProps) {
+  const router = useRouter()
+  const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const load = async () => {
       try {
-        const res = await fetch(`/api/profiles/${publicId}`)
+        const { id } = await params
+        const ownerToken = getOwnerToken()
+        const res = await fetch(`/api/profiles/${id}`, {
+          headers: { 'x-owner-token': ownerToken },
+        })
         const data = await res.json()
-        if (data.success) {
-          setProfile(data.profile)
-        } else {
-          setError(data.error)
-        }
+        if (!data.success) throw new Error(data.error)
+        setProfile(data.profile)
       } catch (err: any) {
         setError(err.message)
       } finally {
         setLoading(false)
       }
     }
-    fetchProfile()
-  }, [publicId])
+    load()
+  }, [params])
 
-  const handleSubmit = async (data: ProfileFormData) => {
+  const handleSubmit = async (data: any) => {
     setSaving(true)
-    setError(null)
     try {
+      const { id } = await params
       const ownerToken = getOwnerToken()
-      const res = await fetch(`/api/profiles/${publicId}`, {
+      const res = await fetch(`/api/profiles/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -56,10 +57,9 @@ export default function EditPage() {
       })
       const result = await res.json()
       if (!result.success) throw new Error(result.error)
-      setSuccess(true)
-      setTimeout(() => router.push('/dashboard'), 1500)
+      router.push('/dashboard')
     } catch (err: any) {
-      setError(err.message)
+      alert(err.message)
     } finally {
       setSaving(false)
     }
@@ -69,27 +69,28 @@ export default function EditPage() {
     <>
       <Navbar />
       <main style={{ minHeight: '100vh', background: 'var(--navy)', paddingTop: '64px' }}>
-        <div style={{ maxWidth: 760, margin: '0 auto', padding: '60px 24px' }}>
+        <div className="page-wrap-narrow">
 
-          <Link href="/dashboard" className="btn-ghost" style={{ marginBottom: '24px', display: 'inline-flex' }}>
+          {/* Back button */}
+          <Link href="/dashboard" className="btn-ghost" style={{ marginBottom: 'var(--space-md)', display: 'inline-flex' }}>
             <ArrowLeft size={14} />
             Back to Dashboard
           </Link>
 
-          <div style={{ marginBottom: '40px' }}>
-            <h1 className="font-display" style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '8px' }}>
+          <div style={{ marginBottom: 'var(--space-xl)' }}>
+            <h1 className="font-display" style={{ fontSize: 'clamp(1.75rem, 3.2vw, 2.35rem)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '8px' }}>
               Edit Profile
             </h1>
             {profile && (
-              <p style={{ color: 'var(--text-secondary)' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
                 Editing <strong style={{ color: 'var(--text-primary)' }}>{profile.fullName}</strong>
               </p>
             )}
           </div>
 
           {loading && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {[1,2,3].map(i => <div key={i} className="card skeleton" style={{ height: 80 }} />)}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+              {[1, 2, 3].map(i => <div key={i} className="card skeleton" style={{ height: 80 }} />)}
             </div>
           )}
 
@@ -109,21 +110,7 @@ export default function EditPage() {
             </div>
           )}
 
-          {success && (
-            <div style={{
-              display: 'flex', gap: '10px', alignItems: 'center',
-              background: 'rgba(34,197,94,0.1)',
-              border: '1px solid rgba(34,197,94,0.3)',
-              borderRadius: 'var(--radius-md)',
-              padding: '14px 16px',
-              color: '#86efac',
-              fontSize: '0.88rem',
-              marginBottom: '16px',
-            }}>
-              <CheckCircle size={16} />
-              Profile updated! Redirecting to dashboard...
-            </div>
-          )}
+
 
           {profile && !loading && (
             <ProfileForm

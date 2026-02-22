@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased">
+      <body className="antialiased" style={{ fontFamily: 'var(--font-body)' }}>
         {children}
       </body>
     </html>

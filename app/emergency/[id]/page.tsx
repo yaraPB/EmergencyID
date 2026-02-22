@@ -1,332 +1,290 @@
 import { prisma } from '@/lib/prisma'
-import { Profile, EmergencyContact, VisibilitySettings } from '@/lib/types'
-import { Phone, AlertTriangle, Heart, Pill, Activity, User, Calendar, Info } from 'lucide-react'
-import { notFound } from 'next/navigation'
+import { Heart, AlertCircle, Phone, Calendar, ShieldCheck, Activity, Pill, Droplet, UserCheck, Smartphone, Info } from 'lucide-react'
+import Link from 'next/link'
+import { Metadata } from 'next'
 
 interface EmergencyPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
+}
+
+export async function generateMetadata({ params }: EmergencyPageProps): Promise<Metadata> {
+  const { id } = await params
+  const profile = await prisma.profile.findUnique({
+    where: { publicId: id },
+  })
+
+  return {
+    title: profile ? `Emergency ID: ${profile.fullName}` : 'Profile Not Found',
+    description: 'Emergency medical information profile.',
+  }
 }
 
 export default async function EmergencyPage({ params }: EmergencyPageProps) {
-  let profile: any = null
-
-  try {
-    profile = await prisma.profile.findUnique({
-      where: { publicId: params.id },
-    })
-  } catch (error) {
-    // DB not connected in demo
-  }
+  const { id } = await params
+  const profile = await prisma.profile.findUnique({
+    where: { publicId: id },
+  })
 
   if (!profile) {
     return <EmergencyNotFound />
   }
 
-  const visibility = profile.visibility as VisibilitySettings
-  const contacts = profile.emergencyContacts as EmergencyContact[]
+  const visibility = (profile.visibility as any) || {}
+  const showDonor = visibility.organDonor && profile.organDonor;
+  // Use profile.emergencyContacts directly since we're on server
+  const showContacts = visibility.emergencyContacts && profile.emergencyContacts.length > 0;
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#0a1520',
-      color: '#f0f4f8',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-    }}>
-
-      {/* Emergency Header */}
+    <div style={{ minHeight: '100vh', background: '#080c10', color: 'white' }}>
+      {/* Critical Header Band */}
       <div style={{
-        background: 'linear-gradient(135deg, #1a0a08 0%, #2a1008 100%)',
-        borderBottom: '2px solid #e8533a',
-        padding: '16px 20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '12px',
-        flexWrap: 'wrap',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        background: 'linear-gradient(to right, #7f1d1d, #ef4444, #7f1d1d)',
+        height: '6px',
+        width: '100%',
+        position: 'fixed',
+        top: 0,
+        zIndex: 100
+      }} />
+
+      <main style={{ maxWidth: '600px', margin: '0 auto', padding: '60px 20px 80px' }}>
+
+        {/* Verification Badge */}
+        <div
+          className="fade-in"
+          style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}
+        >
           <div style={{
-            background: '#e8533a',
-            borderRadius: '8px',
-            padding: '8px',
+            background: 'rgba(34,197,94,0.1)',
+            border: '1px solid rgba(34,197,94,0.2)',
+            padding: '8px 16px',
+            borderRadius: '100px',
             display: 'flex',
-            animation: 'pulse 2s infinite',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#4ade80',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
           }}>
-            <Heart size={18} color="white" fill="white" />
-          </div>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '1rem', color: '#e8533a', letterSpacing: '0.05em' }}>
-              ⚠ EMERGENCY MEDICAL ID
-            </div>
-            <div style={{ fontSize: '0.72rem', color: '#7fa5c4', marginTop: '2px' }}>
-              Scan this QR code in emergencies only
-            </div>
+            <ShieldCheck size={16} />
+            Verified Emergency Record
           </div>
         </div>
-        <div style={{ fontSize: '0.72rem', color: '#4a7090', textAlign: 'right' }}>
-          <div>EmergencyID Platform</div>
-          <div>No login required</div>
+
+        {/* Profile Card */}
+        <div
+          className="card fade-in"
+          style={{
+            padding: '48px 32px',
+            textAlign: 'center',
+            marginBottom: '32px',
+            background: 'linear-gradient(180deg, var(--surface-raised) 0%, var(--surface) 100%)',
+            border: '1px solid rgba(255,255,255,0.05)',
+            boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
+            position: 'relative',
+            overflow: 'hidden',
+            animationDelay: '0.1s'
+          }}
+        >
+          {/* Subtle Glow Background */}
+          <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle, rgba(232, 90, 66, 0.05) 0%, transparent 50%)', pointerEvents: 'none' }} />
+
+          {/* Blood Type Badge */}
+          <div style={{ position: 'relative', width: 90, height: 90, margin: '0 auto 28px' }}>
+            <div
+              className="pulse-ring"
+              style={{
+                position: 'absolute', inset: -10, borderRadius: '50%', background: 'var(--coral)', filter: 'blur(20px)'
+              }}
+            />
+            <div className="blood-badge" style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%', fontSize: '1.75rem', border: '2px solid rgba(255,255,255,0.1)' }}>
+              {visibility.bloodType && profile.bloodType ? profile.bloodType : '?'}
+            </div>
+          </div>
+
+          <h1 className="font-display" style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '12px', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+            {profile.fullName}
+          </h1>
+
+          {visibility.dateOfBirth && profile.dateOfBirth && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
+              <Calendar size={18} />
+              Born {new Date(profile.dateOfBirth).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
+          )}
+
+          {showDonor && (
+            <div style={{
+              marginTop: '24px',
+              background: 'rgba(34,197,94,0.12)',
+              color: '#86efac',
+              padding: '8px 20px',
+              borderRadius: '100px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              border: '1px solid rgba(34,197,94,0.2)'
+            }}>
+              <Heart size={16} fill="#86efac" />
+              Organ Donor
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div style={{ maxWidth: 680, margin: '0 auto', padding: '24px 16px' }}>
+        {/* Information Grid/List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-        {/* Patient Name & Blood Type */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '24px',
-          gap: '16px',
-          flexWrap: 'wrap',
-        }}>
-          <div>
-            <div style={{ fontSize: '0.7rem', color: '#4a7090', letterSpacing: '0.1em', marginBottom: '4px' }}>PATIENT</div>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1.1, margin: 0 }}>{profile.fullName}</h1>
-            {visibility.dateOfBirth && profile.dateOfBirth && (
-              <div style={{ color: '#7fa5c4', fontSize: '0.85rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Calendar size={12} />
-                {new Date(profile.dateOfBirth).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+          {/* Allergies */}
+          {visibility.allergies && profile.allergies.length > 0 && (
+            <div
+              className="card fade-in"
+              style={{ borderLeft: '4px solid var(--red)', padding: '24px 28px', background: 'rgba(239, 68, 68, 0.03)', animationDelay: '0.2s' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', color: '#fca5a5' }}>
+                <AlertCircle size={22} />
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Allergies (Critical)</h3>
               </div>
-            )}
-          </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                {profile.allergies.map((a: string) => (
+                  <span key={a} className="tag tag-danger" style={{ fontSize: '1.1rem', padding: '10px 20px', fontWeight: 600 }}>{a}</span>
+                ))}
+              </div>
+            </div>
+          )}
 
-          {visibility.bloodType && profile.bloodType && (
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '0.65rem', color: '#e8533a', letterSpacing: '0.1em', fontWeight: 700, marginBottom: '4px' }}>BLOOD TYPE</div>
-              <div style={{
-                width: 72, height: 72,
-                background: '#e8533a',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.5rem',
-                fontWeight: 900,
-                boxShadow: '0 0 0 6px rgba(232,83,58,0.2), 0 0 24px rgba(232,83,58,0.3)',
-              }}>
-                {profile.bloodType}
+          {/* Conditions */}
+          {visibility.conditions && profile.conditions.length > 0 && (
+            <div
+              className="card fade-in"
+              style={{ borderLeft: '4px solid var(--yellow)', padding: '24px 28px', animationDelay: '0.3s' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', color: '#fde047' }}>
+                <Activity size={22} />
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Medical Conditions</h3>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                {profile.conditions.map((c: string) => (
+                  <span key={c} className="tag tag-warning" style={{ fontSize: '1.1rem', padding: '10px 20px', fontWeight: 600 }}>{c}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Medications */}
+          {visibility.medications && profile.medications.length > 0 && (
+            <div
+              className="card fade-in"
+              style={{ borderLeft: '4px solid #3b82f6', padding: '24px 28px', animationDelay: '0.4s' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', color: '#93c5fd' }}>
+                <Pill size={22} />
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Current Medications</h3>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {profile.medications.map((m: string) => (
+                  <div key={m} style={{ padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#3b82f6' }} />
+                    {m}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Notes */}
+          {visibility.notes && profile.notes && (
+            <div
+              className="card fade-in"
+              style={{ padding: '24px 28px', background: 'rgba(255,255,255,0.02)', animationDelay: '0.5s' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px', color: 'var(--text-muted)' }}>
+                <Info size={18} />
+                <h3 style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Clinical Notes</h3>
+              </div>
+              <p style={{ lineHeight: 1.8, fontSize: '1.1rem', color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>{profile.notes}</p>
+            </div>
+          )}
+
+          {/* Emergency Contacts */}
+          {showContacts && (
+            <div
+              className="fade-in"
+              style={{ marginTop: '32px', animationDelay: '0.6s' }}
+            >
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'white', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '24px', textAlign: 'center', opacity: 0.8 }}>
+                Primary Contacts
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {profile.emergencyContacts.map((contact: any, idx: number) => (
+                  <div key={idx} className="card" style={{ padding: '24px', background: 'var(--surface-raised)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '6px', color: 'white' }}>{contact.name}</div>
+                        <div style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{contact.relationship}</div>
+                      </div>
+                      <a
+                        href={`tel:${contact.countryCode || ''}${contact.phone}`}
+                        className="btn-primary"
+                        style={{
+                          padding: '16px 24px',
+                          background: 'var(--green)',
+                          boxShadow: '0 10px 25px rgba(34,197,94,0.4)',
+                          borderRadius: '16px'
+                        }}
+                      >
+                        <Phone size={22} fill="white" />
+                        <span style={{ fontWeight: 800 }}>CALL</span>
+                      </a>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
         </div>
 
-        {/* Organ Donor */}
-        {visibility.organDonor && profile.organDonor && (
-          <div style={{
-            background: 'rgba(34,197,94,0.1)',
-            border: '1px solid rgba(34,197,94,0.4)',
-            borderRadius: '10px',
-            padding: '12px 16px',
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-          }}>
-            <Heart size={16} color="#86efac" fill="#86efac" />
-            <span style={{ color: '#86efac', fontWeight: 700, fontSize: '0.9rem' }}>ORGAN DONOR — Consent given</span>
-          </div>
-        )}
-
-        {/* CRITICAL: Allergies */}
-        {visibility.allergies && profile.allergies.length > 0 && (
-          <EmergencySection
-            icon={<AlertTriangle size={16} />}
-            title="⚠ ALLERGIES — CRITICAL"
-            color="#ef4444"
-            bgColor="rgba(239,68,68,0.08)"
-            borderColor="rgba(239,68,68,0.4)"
-          >
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {profile.allergies.map((a: string) => (
-                <span key={a} style={{
-                  background: 'rgba(239,68,68,0.15)',
-                  border: '1px solid rgba(239,68,68,0.4)',
-                  borderRadius: '20px',
-                  padding: '6px 14px',
-                  color: '#fca5a5',
-                  fontWeight: 700,
-                  fontSize: '0.88rem',
-                }}>
-                  {a}
-                </span>
-              ))}
+        {/* Generic Footer */}
+        <div
+          className="fade-in"
+          style={{ marginTop: '80px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '40px', animationDelay: '0.8s' }}
+        >
+          <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ width: 32, height: 32, background: 'var(--coral)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Heart size={16} fill="white" />
             </div>
-          </EmergencySection>
-        )}
-
-        {/* Conditions */}
-        {visibility.conditions && profile.conditions.length > 0 && (
-          <EmergencySection
-            icon={<Activity size={16} />}
-            title="CHRONIC CONDITIONS"
-            color="#eab308"
-            bgColor="rgba(234,179,8,0.06)"
-            borderColor="rgba(234,179,8,0.3)"
-          >
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {profile.conditions.map((c: string) => (
-                <span key={c} style={{
-                  background: 'rgba(234,179,8,0.1)',
-                  border: '1px solid rgba(234,179,8,0.3)',
-                  borderRadius: '20px',
-                  padding: '5px 12px',
-                  color: '#fde047',
-                  fontSize: '0.85rem',
-                }}>
-                  {c}
-                </span>
-              ))}
-            </div>
-          </EmergencySection>
-        )}
-
-        {/* Medications */}
-        {visibility.medications && profile.medications.length > 0 && (
-          <EmergencySection
-            icon={<Pill size={16} />}
-            title="CURRENT MEDICATIONS"
-            color="#3b82f6"
-            bgColor="rgba(59,130,246,0.06)"
-            borderColor="rgba(59,130,246,0.3)"
-          >
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {profile.medications.map((m: string) => (
-                <span key={m} style={{
-                  background: 'rgba(59,130,246,0.1)',
-                  border: '1px solid rgba(59,130,246,0.3)',
-                  borderRadius: '20px',
-                  padding: '5px 12px',
-                  color: '#93c5fd',
-                  fontSize: '0.85rem',
-                }}>
-                  {m}
-                </span>
-              ))}
-            </div>
-          </EmergencySection>
-        )}
-
-        {/* Notes */}
-        {visibility.notes && profile.notes && (
-          <EmergencySection
-            icon={<Info size={16} />}
-            title="MEDICAL NOTES"
-            color="#a78bfa"
-            bgColor="rgba(167,139,250,0.06)"
-            borderColor="rgba(167,139,250,0.3)"
-          >
-            <p style={{ color: '#c4b5fd', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>
-              {profile.notes}
-            </p>
-          </EmergencySection>
-        )}
-
-        {/* Emergency Contacts */}
-        {visibility.emergencyContacts && contacts.length > 0 && (
-          <EmergencySection
-            icon={<User size={16} />}
-            title="EMERGENCY CONTACTS"
-            color="#e8533a"
-            bgColor="rgba(232,83,58,0.06)"
-            borderColor="rgba(232,83,58,0.3)"
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {contacts.map((contact, i) => (
-                <div key={i} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '12px',
-                  background: 'rgba(0,0,0,0.2)',
-                  borderRadius: '8px',
-                  padding: '12px 14px',
-                  flexWrap: 'wrap',
-                }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{contact.name}</div>
-                    <div style={{ color: '#7fa5c4', fontSize: '0.75rem' }}>{contact.relationship}</div>
-                  </div>
-                  <a
-                    href={`tel:${contact.phone}`}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      background: '#e8533a',
-                      color: 'white',
-                      textDecoration: 'none',
-                      padding: '8px 14px',
-                      borderRadius: '20px',
-                      fontWeight: 700,
-                      fontSize: '0.85rem',
-                    }}
-                  >
-                    <Phone size={13} />
-                    {contact.phone}
-                  </a>
-                </div>
-              ))}
-            </div>
-          </EmergencySection>
-        )}
-
-        {/* Footer notice */}
-        <div style={{
-          marginTop: '32px',
-          paddingTop: '16px',
-          borderTop: '1px solid #1e3147',
-          textAlign: 'center',
-          color: '#4a7090',
-          fontSize: '0.72rem',
-          lineHeight: 1.6,
-        }}>
-          <p>This page contains personal medical information. Access only in genuine emergencies.</p>
-          <p style={{ marginTop: '4px' }}>Powered by EmergencyID • Profile owner controls all information on this page</p>
+            <span style={{ fontWeight: 800, color: 'white', fontSize: '1.1rem', letterSpacing: '-0.01em' }}>Emergency<span style={{ color: 'var(--coral)' }}>ID</span></span>
+          </Link>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '32px', maxWidth: '300px', margin: '0 auto 32px', lineHeight: 1.6 }}>
+            The universal standard for digital medical identification.
+          </p>
+          <Link href="/create" className="btn-secondary" style={{ padding: '14px 28px', borderRadius: '14px', border: '1px solid var(--surface-border)' }}>
+            Create Your Emergency QR Profile
+          </Link>
         </div>
-      </div>
+      </main>
 
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-      `}</style>
-    </div>
-  )
-}
-
-function EmergencySection({
-  icon, title, color, bgColor, borderColor, children
-}: {
-  icon: React.ReactNode
-  title: string
-  color: string
-  bgColor: string
-  borderColor: string
-  children: React.ReactNode
-}) {
-  return (
-    <div style={{
-      background: bgColor,
-      border: `1px solid ${borderColor}`,
-      borderLeft: `3px solid ${color}`,
-      borderRadius: '10px',
-      padding: '16px',
-      marginBottom: '14px',
-    }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        marginBottom: '12px',
-        color: color,
-      }}>
-        {icon}
-        <span style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.1em' }}>{title}</span>
-      </div>
-      {children}
+        .fade-in {
+          animation: fadeIn 0.6s ease-out forwards;
+          opacity: 0;
+        }
+        @keyframes pulseRing {
+          0% { transform: scale(1); opacity: 0.3; }
+          50% { transform: scale(1.15); opacity: 0.5; }
+          100% { transform: scale(1); opacity: 0.3; }
+        }
+        .pulse-ring {
+          animation: pulseRing 3s ease-in-out infinite;
+        }
+      `}} />
     </div>
   )
 }
@@ -335,40 +293,23 @@ function EmergencyNotFound() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0a1520',
+      background: '#080c10',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '24px',
-      fontFamily: 'system-ui, sans-serif',
-      color: '#f0f4f8',
+      textAlign: 'center'
     }}>
-      <div style={{ textAlign: 'center', maxWidth: 400 }}>
-        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🔍</div>
-        <h1 style={{ fontWeight: 800, fontSize: '1.5rem', marginBottom: '12px' }}>Profile Not Found</h1>
-        <p style={{ color: '#7fa5c4', lineHeight: 1.6, marginBottom: '24px' }}>
-          This Emergency ID doesn't exist or may have been deleted by its owner.
+      <div className="card" style={{ padding: '64px 32px', maxWidth: '440px', background: 'var(--surface-raised)' }}>
+        <div style={{ width: 80, height: 80, background: 'rgba(239,68,68,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px' }}>
+          <AlertCircle size={40} color="var(--red)" />
+        </div>
+        <h1 className="font-display" style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '16px' }}>Unknown Record</h1>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.7, fontSize: '1.1rem' }}>
+          This medical profile is either restricted, deleted, or the secure link has expired.
         </p>
-        <a href="/" style={{
-          background: '#e8533a',
-          color: 'white',
-          textDecoration: 'none',
-          padding: '12px 24px',
-          borderRadius: '8px',
-          fontWeight: 600,
-          fontSize: '0.9rem',
-        }}>
-          Create Your Own Emergency ID
-        </a>
+        <Link href="/" className="btn-primary" style={{ padding: '16px 32px', width: '100%', justifyContent: 'center' }}>Return to Safety</Link>
       </div>
     </div>
   )
-}
-
-export async function generateMetadata({ params }: EmergencyPageProps) {
-  return {
-    title: 'Emergency Medical ID',
-    description: 'Critical medical information for emergency responders',
-    robots: 'noindex',
-  }
 }

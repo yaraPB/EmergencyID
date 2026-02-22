@@ -5,33 +5,33 @@ export default function Footer() {
   return (
     <footer style={{
       borderTop: '1px solid var(--surface-border)',
-      padding: '48px 24px',
+      padding: 'var(--space-xl) 24px',
       background: 'var(--navy)',
     }}>
       <div style={{
-        maxWidth: 1100,
+        maxWidth: 'var(--content-wide)',
         margin: '0 auto',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         flexWrap: 'wrap',
-        gap: '24px',
+        gap: 'var(--space-lg)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
-            width: 28, height: 28,
+            width: 30, height: 30,
             background: 'var(--coral)',
-            borderRadius: '7px',
+            borderRadius: 'var(--radius-sm)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <Heart size={14} color="white" fill="white" />
           </div>
-          <span style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, color: 'var(--text-primary)' }}>
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
             Emergency<span style={{ color: 'var(--coral)' }}>ID</span>
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-lg)', flexWrap: 'wrap' }}>
           {[
             { href: '/', label: 'Home' },
             { href: '/create', label: 'Create Profile' },
@@ -40,14 +40,14 @@ export default function Footer() {
             <Link
               key={item.href}
               href={item.href}
-              style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textDecoration: 'none' }}
+              style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textDecoration: 'none' }}
             >
               {item.label}
             </Link>
           ))}
         </div>
 
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
           Built for emergencies. Built with care.
         </p>
       </div>

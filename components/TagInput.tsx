@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, KeyboardEvent } from 'react'
+import { useState, useRef, KeyboardEvent } from 'react'
 import { X, Plus } from 'lucide-react'
 
 interface TagInputProps {
@@ -12,6 +12,7 @@ interface TagInputProps {
 
 export default function TagInput({ value, onChange, placeholder = 'Type and press Enter...', label }: TagInputProps) {
   const [input, setInput] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const addTag = () => {
     const trimmed = input.trim()
@@ -49,10 +50,7 @@ export default function TagInput({ value, onChange, placeholder = 'Type and pres
         transition: 'border-color 0.15s ease',
         cursor: 'text',
       }}
-        onClick={() => {
-          const inputs = document.querySelectorAll('.tag-input-field')
-          inputs.forEach(i => (i as HTMLElement).focus())
-        }}
+        onClick={() => inputRef.current?.focus()}
       >
         {value.map(tag => (
           <span key={tag} className="tag" style={{ background: 'var(--surface-raised)' }}>
@@ -71,7 +69,7 @@ export default function TagInput({ value, onChange, placeholder = 'Type and pres
           </span>
         ))}
         <input
-          className="tag-input-field"
+          ref={inputRef}
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}

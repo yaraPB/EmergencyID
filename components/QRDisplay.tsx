@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
-import { Download, Link2, Check } from 'lucide-react'
+import { Download, Copy, Check } from 'lucide-react'
 
 interface QRDisplayProps {
   url: string
@@ -12,75 +12,70 @@ interface QRDisplayProps {
 export default function QRDisplay({ url, profileName }: QRDisplayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [copied, setCopied] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
 
   useEffect(() => {
-    if (!canvasRef.current) return
-    QRCode.toCanvas(canvasRef.current, url, {
-      width: 220,
-      margin: 2,
-      color: {
-        dark: '#0d1b2a',
-        light: '#ffffff',
-      },
-    })
+    if (canvasRef.current) {
+      QRCode.toCanvas(canvasRef.current, url, {
+        width: 240,
+        margin: 2,
+        color: {
+          dark: '#0f172a',
+          light: '#ffffff',
+        },
+      })
+    }
   }, [url])
 
   const downloadQR = () => {
-    if (!canvasRef.current) return
+    const canvas = canvasRef.current
+    if (!canvas) return
     const link = document.createElement('a')
-    link.download = `emergency-id-${profileName?.toLowerCase().replace(/\s/g, '-') || 'qr'}.png`
-    link.href = canvasRef.current.toDataURL()
+    link.download = `emergency-qr-${profileName?.toLowerCase().replace(/\s+/g, '-') || 'id'}.png`
+    link.href = canvas.toDataURL()
     link.click()
   }
 
-  const copyLink = async () => {
-    await navigator.clipboard.writeText(url)
+  const copyUrl = () => {
+    navigator.clipboard.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
       <div style={{
         background: 'white',
         padding: '16px',
-        borderRadius: 'var(--radius-md)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+        borderRadius: '24px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
         position: 'relative',
-        overflow: 'hidden',
+        border: '4px solid var(--surface-border)'
       }}>
-        <canvas ref={canvasRef} />
-        {/* Corner marks */}
-        {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map(pos => {
-          const [v, h] = pos.split('-')
-          return (
-            <div key={pos} style={{
-              position: 'absolute',
-              [v]: 8, [h]: 8,
-              width: 16, height: 16,
-              borderTop: v === 'top' ? '2px solid var(--coral)' : 'none',
-              borderBottom: v === 'bottom' ? '2px solid var(--coral)' : 'none',
-              borderLeft: h === 'left' ? '2px solid var(--coral)' : 'none',
-              borderRight: h === 'right' ? '2px solid var(--coral)' : 'none',
-            }} />
-          )
-        })}
+        <canvas ref={canvasRef} style={{ borderRadius: '12px' }} />
+        <div style={{
+          position: 'absolute', top: -10, right: -10,
+          background: 'var(--coral)', color: 'white',
+          padding: '4px 10px', borderRadius: '100px',
+          fontSize: '0.65rem', fontWeight: 800,
+          boxShadow: '0 4px 10px rgba(232,83,58,0.3)'
+        }}>
+          LIVE QR
+        </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <button onClick={downloadQR} className="btn-secondary" style={{ padding: '9px 16px', fontSize: '0.82rem' }}>
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button onClick={downloadQR} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
           <Download size={14} />
-          Download
+          Save Image
         </button>
-        <button onClick={copyLink} className="btn-secondary" style={{ padding: '9px 16px', fontSize: '0.82rem' }}>
-          {copied ? <Check size={14} color="var(--green)" /> : <Link2 size={14} />}
+        <button onClick={copyUrl} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+          {copied ? <Check size={14} color="var(--green)" /> : <Copy size={14} />}
           {copied ? 'Copied!' : 'Copy Link'}
         </button>
       </div>
 
-      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', maxWidth: 240 }}>
-        Print this and keep it in your wallet, or save it to your phone's lock screen
-      </p>
+
     </div>
   )
 }
